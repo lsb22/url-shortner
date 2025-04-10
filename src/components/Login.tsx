@@ -27,9 +27,8 @@ const Login = () => {
     apiClient
       .post("/login", data)
       .then((res) => {
-        console.log(res);
         localStorage.setItem("token", res.data.token);
-        navigate("/home");
+        navigate("/home/" + data.email);
       })
       .catch((err) => {
         alert(err.response.data.messsage);
