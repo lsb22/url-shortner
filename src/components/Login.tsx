@@ -25,13 +25,14 @@ const Login = () => {
 
   const handleLoginClick = (data: LoginData) => {
     apiClient
-      .post("/login", data)
+      .post("/login/user", data)
       .then((res) => {
         localStorage.setItem("token", res.data.token);
         navigate("/home/" + data.email);
       })
       .catch((err) => {
-        alert(err.response.data.messsage);
+        // alert(err.response.data.messsage);
+        console.log(err);
       });
   };
 
