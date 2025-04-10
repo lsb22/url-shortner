@@ -31,8 +31,8 @@ const Login = () => {
         navigate("/home/" + data.email);
       })
       .catch((err) => {
-        // alert(err.response.data.messsage);
-        console.log(err);
+        alert(err.response.data.message);
+        // console.log(err.response.data.message);
       });
   };
 
