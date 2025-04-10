@@ -3,6 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 import apiClient from "../services/api-client";
+import useUrlStore from "../store/urlStore";
 
 const schema = z.object({
   // for schema based form validation
@@ -22,12 +23,14 @@ const Login = () => {
     formState: { errors },
   } = useForm<LoginData>({ resolver: zodResolver(schema) });
   const navigate = useNavigate();
+  const { setUserId } = useUrlStore();
 
   const handleLoginClick = (data: LoginData) => {
     apiClient
       .post("/login/user", data)
       .then((res) => {
         localStorage.setItem("token", res.data.token);
+        setUserId(data.email);
         navigate("/home/" + data.email);
       })
       .catch((err) => {

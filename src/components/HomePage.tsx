@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import apiClient from "../services/api-client";
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
+import useUrlStore from "../store/urlStore";
 
 const schema = z.object({
   // for schema based form validation
@@ -15,7 +16,7 @@ const schema = z.object({
 
 type urlData = z.infer<typeof schema>;
 
-interface urlSchema {
+export interface urlSchema {
   orgUrl: string;
   shortUrl: string;
   clicks: number;
@@ -32,7 +33,8 @@ const HomePage = () => {
     formState: { errors },
   } = useForm<urlData>({ resolver: zodResolver(schema) });
   const { userId } = useParams();
-  const [urls, setUrls] = useState<urlSchema[]>([]);
+  // const [urls, setUrls] = useState<urlSchema[]>([]);
+  const { fill, insert, urls } = useUrlStore();
 
   const handleFormSubmit = (data: urlData) => {
     apiClient
@@ -41,7 +43,10 @@ const HomePage = () => {
           Authorization: localStorage.getItem("token"),
         },
       })
-      .then((res) => setUrls([...urls, res.data.newUrl]))
+      .then((res) => {
+        // setUrls([...urls, res.data.newUrl])
+        insert(res.data.newUrl);
+      })
       .catch((err) => alert(err.response.data.messsage));
   };
 
@@ -52,7 +57,10 @@ const HomePage = () => {
           Authorization: localStorage.getItem("token"),
         },
       })
-      .then((res) => setUrls([...urls, ...res.data.urls]))
+      .then((res) => {
+        // setUrls([...urls, ...res.data.urls])
+        fill(res.data.urls);
+      })
       .catch((err) => console.log(err));
   }, []);
   return (
@@ -86,11 +94,47 @@ const HomePage = () => {
         </div>
         {errors.url && <p className="text-red-200">{errors.url.message}</p>}
       </div>
-      <div className="">
-        {urls.length !== 0 &&
-          urls.map((url, idx) => (
-            <p key={idx}>{url.orgUrl + " --> " + url.shortUrl}</p>
-          ))}
+      <div className="relative overflow-x-auto shadow-xl p-10">
+        <table className="w-full text-sm text-center rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3 w-100">
+                Original Url
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Short Url
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Total clicks
+              </th>
+              <th>Created Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {urls.length !== 0 &&
+              urls.map((url, idx) => (
+                <tr
+                  key={idx}
+                  className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200"
+                >
+                  <td className="px-6 py-4">
+                    <a href={url.orgUrl} target="_blank">
+                      {url.orgUrl}
+                    </a>
+                  </td>
+                  <td className="px-6 py-4">
+                    <a href={url.shortUrl} target="_blank">
+                      {url.shortUrl}
+                    </a>
+                  </td>
+                  <td className="px-6 py-4">{url.clicks}</td>
+                  <td className="px-6 py-4">
+                    {new Date(url.createdDate).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
